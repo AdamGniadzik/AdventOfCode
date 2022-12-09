@@ -2,13 +2,13 @@ package org.advent.advent2022.firstDay;
 
 import java.io.*;
 
-public class FirstDay {
+public class Main {
     public static void main(String[] args) {
         int sum = 0;
         int maxSum = 0;
         try {
 
-            InputStream is = FirstDay.class.getClassLoader().getResourceAsStream("org/advent/advent2022/firstDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/firstDay/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while (br.ready()) {
                 String line = br.readLine();
