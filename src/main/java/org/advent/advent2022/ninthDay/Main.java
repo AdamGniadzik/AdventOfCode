@@ -1,5 +1,7 @@
 package org.advent.advent2022.ninthDay;
 
+import org.advent.advent2022.eighthDay.Tree;
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -11,120 +13,104 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
+        List<Pointer> tails = new ArrayList<>();
+        for(int i=0;i<9;i++){
+            tails.add(new Pointer());
+        }
+        Set<String> positions = new HashSet<>();
+        positions.add(0 + " " + 0);
         Pointer head = new Pointer();
         Pointer tail = new Pointer();
+        InputStream is = org.advent.advent2022.eighthDay.Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/ninthDay/input.txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        List<List<Tree>> grid = new ArrayList<>();
+        grid.add(new ArrayList<>());
+        int index = 0;
         try {
-            Set<String> positions = new HashSet<>();
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/ninthDay/input.txt");
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            positions.add(0 + " " + 0);
             while (br.ready()) {
                 char direction = (char) br.read();
                 br.read();
-                int counter = 0;
                 int numberOfSteps = Integer.parseInt(br.readLine());
-                if (direction == 'D') {
-                    while (counter < numberOfSteps) {
-                        moveDown(head, tail);
-                        counter++;
-                        positions.add(tail.x + " " + tail.y);
-
+                for(int i=0;i<numberOfSteps; i++){
+                    move(head, direction);
+                    /* Part 1
+                    follow(head, tail);
+                    positions.add(tail.x + " " + tail.y);
+                     */
+                    //Part 2
+                    follow(head, tails.get(0));
+                    for(int j=0;j<=tails.size()-2;j++){
+                        follow(tails.get(j), tails.get(j+1));
                     }
-                } else if (direction == 'U') {
-                    while (counter < numberOfSteps) {
-                        moveUp(head, tail);
-                        counter++;
-                        positions.add(tail.x + " " + tail.y);
-                    }
-                }
-                if (direction == 'L') {
-                    while (counter < numberOfSteps) {
-                        moveLeft(head, tail);
-                        counter++;
-                        positions.add(tail.x + " " + tail.y);
-                    }
-                }
-                if (direction == 'R') {
-                    while (counter < numberOfSteps) {
-                        moveRight(head, tail);
-                        counter++;
-                        positions.add(tail.x + " " + tail.y);
-                    }
+                    positions.add(tails.get(tails.size()-1).x + " " + tails.get(tails.size()-1).y);
+                    // End of Part 2
                 }
             }
-            System.out.println(positions.size());
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
+        System.out.println(positions.size());
+
+
     }
 
-    public static void moveRight(Pointer head, Pointer tail) {
-        if (head.x == tail.x + 1 && head.y == tail.y) {
-            head.x++;
-            tail.x++;
-        } else if (head.y > tail.y && head.x - tail.x > 0) {
-            head.x++;
-            tail.y++;
-            tail.x++;
-        } else if (head.y < tail.y && head.x - tail.x > 0) {
-            head.x++;
-            tail.y--;
-            tail.x++;
-        } else {
-            head.x++;
+    public static void move(Pointer head, char direction){
+        if(direction == 'R'){
+            head.x ++;
+        }else if(direction =='L'){
+            head.x --;
+        }else if(direction =='U'){
+            head.y ++;
+        }else if(direction =='D'){
+            head.y --;
         }
     }
-
-    public static void moveLeft(Pointer head, Pointer tail) {
-        if (head.x == tail.x - 1 && head.y == tail.y) {
-            head.x--;
-            tail.x--;
-        } else if (head.y > tail.y && head.x - tail.x < 0) {
-            head.x--;
-            tail.y++;
-            tail.x--;
-        } else if (head.y < tail.y && head.x - tail.x < 0) {
-            head.x--;
-            tail.y--;
-            tail.x--;
-        } else {
-            head.x--;
-        }
-    }
-
-    public static void moveUp(Pointer head, Pointer tail) {
-        if (head.y == tail.y + 1 && head.x == tail.x) {
-            head.y++;
-            tail.y++;
-        } else if (head.x > tail.x && head.y - tail.y > 0) {
-            head.y++;
+    public static void follow(Pointer head, Pointer tail){
+        if(head.x == tail.x && head.y - tail.y == 2){
+            tail.y ++;
+        } else if (head.y == tail.y && head.x - tail.x == 2) {
             tail.x++;
-            tail.y++;
-        } else if (head.x < tail.x && head.y - tail.y > 0) {
-            head.y++;
+        }
+        if(head.x == tail.x && head.y - tail.y == -2){
+            tail.y --;
+        } else if (head.y == tail.y && head.x - tail.x == -2) {
             tail.x--;
-            tail.y++;
-        } else {
-            head.y++;
+        }
+        else if(head.x - tail.x == 2){
+            if(head.y > tail.y){
+                tail.x++;
+                tail.y++;
+            }else{
+                tail.x++;
+                tail.y--;
+            }
+        }
+        else if(head.x - tail.x == -2){
+            if(head.y > tail.y){
+                tail.x--;
+                tail.y++;
+            }else{
+                tail.x--;
+                tail.y--;
+            }
+        }
+        else if(head.y - tail.y == 2){
+            if(head.x > tail.x){
+                tail.y++;
+                tail.x++;
+            }else{
+                tail.y++;
+                tail.x--;
+            }
+        }
+        else if(head.y - tail.y == -2){
+            if(head.x > tail.x){
+                tail.y--;
+                tail.x++;
+            }else{
+                tail.y--;
+                tail.x--;
+            }
         }
     }
-
-    public static void moveDown(Pointer head, Pointer tail) {
-        if (head.y == tail.y - 1 && head.x == tail.x) {
-            head.y--;
-            tail.y--;
-        } else if (head.x > tail.x && head.y - tail.y < 0) {
-            head.y--;
-            tail.x++;
-            tail.y--;
-        } else if (head.x < tail.x && head.y - tail.y < 0) {
-            head.y--;
-            tail.x--;
-            tail.y--;
-        } else {
-            head.y--;
-        }
-    }
-
-
 }
