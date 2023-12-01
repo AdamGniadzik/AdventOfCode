@@ -1,19 +1,17 @@
-package org.advent.advent2022.sixthDay;
+package org.advent.advent2022.day6;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
         try {
             final int PART_ONE_CONDITION = 4;
             final int PART_TWO_CONDITION = 4;
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/sixthDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day6/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             Map<Character, Integer> markerMap = new HashMap<>();
             String input = br.readLine();

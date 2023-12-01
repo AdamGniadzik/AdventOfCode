@@ -1,4 +1,4 @@
-package org.advent.advent2022.seventhDay;
+package org.advent.advent2022.day7;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ public class Main {
         ElfFile mainDir = new ElfFile("/", null);
         ElfFile currentDir = mainDir;
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/seventhDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day7/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             br.readLine(); // omit first $cd /
             while (br.ready()) {

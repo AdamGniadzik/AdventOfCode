@@ -1,4 +1,4 @@
-package org.advent.advent2022.firstDay;
+package org.advent.advent2022.day1;
 
 import java.io.*;
 
@@ -8,7 +8,7 @@ public class Main {
         int maxSum = 0;
         try {
 
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/firstDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day1/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while (br.ready()) {
                 String line = br.readLine();

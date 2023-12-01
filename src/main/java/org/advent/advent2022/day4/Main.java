@@ -1,4 +1,4 @@
-package org.advent.advent2022.fourthDay;
+package org.advent.advent2022.day4;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -9,7 +9,7 @@ public class Main {
         int score = 0;
         //First part
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/fourthDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day4/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             // Part 1
@@ -33,7 +33,7 @@ public class Main {
 
             score=0;
             br.close();
-            is = org.advent.advent2022.thirdDay.Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/fourthDay/input.txt");
+            is = org.advent.advent2022.day3.Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day4/input.txt");
             br = new BufferedReader(new InputStreamReader(is));
 
             //Part 2

@@ -1,4 +1,4 @@
-package org.advent.advent2022.eighthDay;
+package org.advent.advent2022.day8;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -9,7 +9,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/eighthDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day8/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             List<List<Tree>> grid = new ArrayList<>();
             grid.add(new ArrayList<>());

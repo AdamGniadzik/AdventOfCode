@@ -1,4 +1,4 @@
-package org.advent.advent2022.fifthDay;
+package org.advent.advent2022.day5;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ public class Main {
         try {
             List<String> initialStacksConfig = new ArrayList<>();
             List<Stack<Character>> stacks = new ArrayList<>();
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/fifthDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day5/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             int numberOfLinesToSkip = 0;
             while (br.ready()) {
@@ -36,7 +36,7 @@ public class Main {
                 stacks.add(stack);
             }
             br.close();
-            is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/fifthDay/input.txt");
+            is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day5/input.txt");
             br = new BufferedReader(new InputStreamReader(is));
             System.out.println(numberOfLinesToSkip);
             for (int i = 0; i < numberOfLinesToSkip + 1; i++) {

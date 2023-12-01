@@ -1,15 +1,12 @@
-package org.advent.advent2022.ninthDay;
+package org.advent.advent2022.day9;
 
-import org.advent.advent2022.eighthDay.Tree;
+import org.advent.advent2022.day8.Tree;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,7 +18,7 @@ public class Main {
         positions.add(0 + " " + 0);
         Pointer head = new Pointer();
         Pointer tail = new Pointer();
-        InputStream is = org.advent.advent2022.eighthDay.Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/ninthDay/input.txt");
+        InputStream is = org.advent.advent2022.day8.Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day9/input.txt");
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         List<List<Tree>> grid = new ArrayList<>();
         grid.add(new ArrayList<>());

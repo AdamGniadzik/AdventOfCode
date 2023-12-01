@@ -1,18 +1,14 @@
-package org.advent.advent2022.tenthDay;
+package org.advent.advent2022.day10;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/tenthDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day10/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             Set<Integer> set = Set.of(20, 60, 100, 140, 180, 220);
             int counter = 1;

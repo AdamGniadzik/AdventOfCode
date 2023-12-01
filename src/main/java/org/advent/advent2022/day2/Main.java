@@ -1,4 +1,4 @@
-package org.advent.advent2022.secondDay;
+package org.advent.advent2022.day2;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ public class Main {
         };
         //First part
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/secondDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day2/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while (br.ready()) {
                 String line = br.readLine();
@@ -55,7 +55,7 @@ public class Main {
         //Second part
         score = 0;
         try {
-            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/secondDay/input.txt");
+            InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day2/input.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while (br.ready()) {
                 String line = br.readLine();

@@ -1,18 +1,15 @@
-package org.advent.advent2022.thirdDay;
+package org.advent.advent2022.day3;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         int score = 0;
-        InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/thirdDay/input.txt");
+        InputStream is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day3/input.txt");
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         //Part 1
         while (br.ready()) {
@@ -33,7 +30,7 @@ public class Main {
         System.out.println("Sum of priority is equal to :"+score);
         br.close();
 
-        is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/thirdDay/input.txt");
+        is = Main.class.getClassLoader().getResourceAsStream("org/advent/advent2022/day3/input.txt");
         br = new BufferedReader(new InputStreamReader(is));
 
         score = 0;
