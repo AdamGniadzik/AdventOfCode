@@ -10,16 +10,17 @@ import java.util.stream.Collectors;
 
 public class Main {
 
+    public static List<Long> seedIds = new ArrayList<>();
+    public static List<FarmTuple> seedSoilTuples;
+    public static List<FarmTuple> soilToFertilizerTuples;
+    public static List<FarmTuple> fertilizerToWaterTuples;
+    public static List<FarmTuple> waterToLightTuples;
+    public static List<FarmTuple> lightToTemperatureTuples;
+    public static List<FarmTuple> temperatureToHumidityTuples;
+    public static List<FarmTuple> humidityToLocationTuples;
 
     public static void main(String[] args) {
-        List<Long> seedIds = new ArrayList<>();
-        Map<Long, List<Long>> seedToSoilMap = new HashMap<>(),
-                soilToFertilizerMap = new HashMap<>(),
-                fertilizerToWaterMap = new HashMap<>(),
-                waterToLightMap = new HashMap<>(),
-                lightToTemperatureMap = new HashMap<>(),
-                temperatureToHumiditiyMap = new HashMap<>(),
-                humidiityToLocationMap = new HashMap<>();
+
 
         try {
             InputStream is = org.advent.advent2022.day1.Main.class.getClassLoader()
@@ -28,29 +29,68 @@ public class Main {
             String seeds = br.readLine();
             seedIds.addAll(Arrays.stream(seeds.substring(7).split(" ")).map(Long::parseLong).toList());
             br.readLine();
-            List<FarmTuple> seedSoilTuples = readData(br);
-            List<FarmTuple> soilToFertilizerTuples = readData(br);
-            List<FarmTuple> fertilizerToWaterTuples = readData(br);
-            List<FarmTuple> waterToLightTuples = readData(br);
-            List<FarmTuple> lightToTemperatureTuples = readData(br);
-            List<FarmTuple> temperatureToHumidityTuples = readData(br);
-            List<FarmTuple> humidityToLocationTuples = readData(br);
+            seedSoilTuples = readData(br);
+            soilToFertilizerTuples = readData(br);
+            fertilizerToWaterTuples = readData(br);
+            waterToLightTuples = readData(br);
+            lightToTemperatureTuples = readData(br);
+            temperatureToHumidityTuples = readData(br);
+            humidityToLocationTuples = readData(br);
+            //Stage1
+            System.out.println(seedIds.stream().map(Main::calculate).min(Long::compare).get());
 
-            mapValues(seedIds, seedSoilTuples, seedToSoilMap);
-            mapValues(soilToFertilizerTuples, seedToSoilMap, soilToFertilizerMap);
-            mapValues(fertilizerToWaterTuples, soilToFertilizerMap, fertilizerToWaterMap);
-            mapValues(waterToLightTuples, fertilizerToWaterMap, waterToLightMap);
-            mapValues(lightToTemperatureTuples, waterToLightMap, lightToTemperatureMap);
-            mapValues(temperatureToHumidityTuples, lightToTemperatureMap, temperatureToHumiditiyMap);
-            mapValues(humidityToLocationTuples, temperatureToHumiditiyMap, humidiityToLocationMap);
-            System.out.println(humidiityToLocationMap);
-            System.out.println(humidiityToLocationMap.values().stream().flatMap(Collection::stream).min(Long::compareTo)
-                    .get());
+            //Stage2
+            List<Long> minValues = new ArrayList<>();
+            for (int i = 0; i < seedIds.size(); i = i + 2) {
+                Long beginning = seedIds.get(i);
+                Long end = beginning + seedIds.get(i+1);
+                long beginningVal;
+                long endVal;
+                while(beginning !=  beginning + seedIds.get(i+1) ) {
+                    beginningVal = calculate(beginning);
+                    endVal = calculate(end);
+                    while (endVal - beginningVal != end - beginning) {
+                        end = (end - beginning) / 2 + beginning;
+                        endVal = calculate(end);
 
+                    }
+                    minValues.add(beginningVal);
+                    if(beginning.equals(end)){
+                        minValues.add(calculate(beginning + 1));
+                        break;
+                    }
+                    beginning = end;
+                    end = beginning + seedIds.get(i + 1);
+                }
+            }
+            System.out.println(minValues.stream().min(Long::compareTo).get());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+
+    }
+
+    public static Long calculate(Long seed) {
+        Map<Long, List<Long>> seedToSoilMap = new HashMap<>(),
+                soilToFertilizerMap = new HashMap<>(),
+                fertilizerToWaterMap = new HashMap<>(),
+                waterToLightMap = new HashMap<>(),
+                lightToTemperatureMap = new HashMap<>(),
+                temperatureToHumiditiyMap = new HashMap<>(),
+                humidiityToLocationMap = new HashMap<>();
+
+        mapValues(List.of(seed), seedSoilTuples, seedToSoilMap);
+        mapValues(soilToFertilizerTuples, seedToSoilMap, soilToFertilizerMap);
+        mapValues(fertilizerToWaterTuples, soilToFertilizerMap, fertilizerToWaterMap);
+        mapValues(waterToLightTuples, fertilizerToWaterMap, waterToLightMap);
+        mapValues(lightToTemperatureTuples, waterToLightMap, lightToTemperatureMap);
+        mapValues(temperatureToHumidityTuples, lightToTemperatureMap, temperatureToHumiditiyMap);
+        mapValues(humidityToLocationTuples, temperatureToHumiditiyMap, humidiityToLocationMap);
+        Long value = humidiityToLocationMap.values().stream().flatMap(Collection::stream)
+                .min(Long::compareTo)
+                .get();
+        return value;
     }
 
     public static List<FarmTuple> readData(BufferedReader br) throws IOException {
@@ -65,10 +105,9 @@ public class Main {
         return inputTuples;
     }
 
-    public static void mapValues(List<FarmTuple> inputTuples, Map<Long, List<Long>> sourceMap, Map<Long, List<Long>> outputMap) throws IOException {
+    public static void mapValues(List<FarmTuple> inputTuples, Map<Long, List<Long>> sourceMap, Map<Long, List<Long>> outputMap) {
         mapValues(sourceMap.values().stream().flatMap(Collection::stream)
                 .collect(Collectors.toList()), inputTuples, outputMap);
-        System.out.println(outputMap);
     }
 
     public static void mapValues(List<Long> ids, List<FarmTuple> tuples, Map<Long, List<Long>> outputMap) {
