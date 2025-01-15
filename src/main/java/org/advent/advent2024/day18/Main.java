@@ -1,11 +1,8 @@
 package org.advent.advent2024.day18;
 
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-
 
 public class Main {
 
@@ -23,12 +20,10 @@ public class Main {
                 map[Integer.parseInt(input[0])][Integer.parseInt(input[1])] = '#';
                 counter++;
             }
-            printMap();
-
-            Graph graph = new Graph();
+            Graph graph;
             String fallingByte = "";
             String previousByte = "";
-            int fallToPrevent = 0;
+            int lowestDistance = Integer.MAX_VALUE;
             do {
                 graph = new Graph();
                 for (int i = 0; i < map.length; i++) {
@@ -56,14 +51,15 @@ public class Main {
                 }
                 graph.getNodeMap().get("0:0").setDistance(0);
                 Graph.calculateShortestPathFromSource(graph, graph.getNodeMap().get("0:0"));
-//                System.out.println(graph.getNodeMap().get("70:70").getDistance());
+                if(lowestDistance == Integer.MAX_VALUE){
+                    lowestDistance = graph.getNodeMap().get("70:70").getDistance();
+                }
                 previousByte = fallingByte;
                 fallingByte = br.readLine();
                 String[] input = fallingByte.split(",");
                 map[Integer.parseInt(input[0])][Integer.parseInt(input[1])] = '#';
-                fallToPrevent ++;
             }while(br.ready() && graph.getNodeMap().get("70:70").getDistance() != Integer.MAX_VALUE);
-            System.out.println(fallToPrevent);
+            System.out.println(lowestDistance);
             System.out.println(previousByte);
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,12 +71,6 @@ public class Main {
             for (int j = 0; j < 71; j++) {
                 map[i][j] = '.';
             }
-        }
-    }
-
-    private static void printMap() {
-        for (char[] line : map) {
-            System.out.println(Arrays.toString(line));
         }
     }
 }
