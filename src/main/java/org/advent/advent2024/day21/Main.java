@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
-
-
 public class Main {
     public static void main(String[] args) {
         try {
@@ -82,16 +80,16 @@ public class Main {
             Set<String> incomingOutput = new HashSet<>();
             if (outputList.isEmpty()) {
                 if (allowToShuffle) {
-                    outputList.add(output.toString() + 'A');
-                    outputList.add(output.reverse().toString() + 'A');
+                    outputList.addAll(permutation(output.toString()).stream().map(i -> i + 'A')
+                            .collect(Collectors.toSet()));
                 } else {
                     outputList.add(output.toString() + 'A');
                 }
             } else {
                 for (String s : outputList) {
                     if (allowToShuffle) {
-                        incomingOutput.add(s + output + 'A');
-                        incomingOutput.add(s + output.reverse() + 'A');
+                        incomingOutput.addAll(permutation(output.toString()).stream().map(i -> s + i + 'A')
+                                .collect(Collectors.toSet()));
                     } else {
                         incomingOutput.add(s + output + 'A');
                     }
@@ -108,7 +106,7 @@ public class Main {
         Arrays.sort(tmp);
         StringBuilder str = new StringBuilder();
         str.append(tmp);
-        return new HashSet<>(List.of(s, str.toString(), str.reverse().toString()));
+        return new HashSet<>(List.of(s, new StringBuilder(s).reverse().toString(), str.toString(), str.reverse().toString()));
     }
 
     public static Set<String> getNumericalKeypadMove(Map<Transition, Map<Character, Integer>> numericalKeypad, String input) {
@@ -120,7 +118,7 @@ public class Main {
             boolean allowToShuffle = true;
             Transition currentTransition = new Transition(currentCharacter, inputChar);
             Map<Character, Integer> movesToBeDone = new HashMap<>(numericalKeypad.get(currentTransition));
-            if ((currentCharacter == 'A' || currentCharacter == '0') && movesToBeDone.containsKey('^')) {
+            if ((currentCharacter == 'A' || currentCharacter == '0') && movesToBeDone.containsKey('^') && movesToBeDone.containsKey('<') && movesToBeDone.get('<') == 2) {
                 allowToShuffle = false;
                 output.append("^");
                 lastMove = '^';
