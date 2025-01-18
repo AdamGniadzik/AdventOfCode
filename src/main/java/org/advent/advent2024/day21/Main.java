@@ -1,276 +1,228 @@
 package org.advent.advent2024.day21;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
+
 public class Main {
-    public static void main(String[] args) {
-        try {
-            InputStream is = org.advent.advent2024.day2.Main.class.getClassLoader()
-                    .getResourceAsStream("org/advent/advent2024/day21/input.txt");
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            Map<Transition, Map<Character, Integer>> numericalKeypad = new HashMap<>();
-            Map<Transition, Map<Character, Integer>> directionalKeypad = new HashMap<>();
-            initNumericalKeypad(numericalKeypad);
-            initDirectionalKeypad(directionalKeypad);
-            int result = 0;
-            while (br.ready()) {
-                String input = br.readLine();
-                Set<String> firstOutput = getNumericalKeypadMove(numericalKeypad, input);
-                Set<String> secondOutput = firstOutput.stream().map(f -> getDirectionalKeypadMove(directionalKeypad, f))
-                        .flatMap(Collection::stream).collect(Collectors.toSet());
-                Set<String> thirdOutput = secondOutput.stream().map(f -> getDirectionalKeypadMove(directionalKeypad, f))
-                        .flatMap(Collection::stream).collect(Collectors.toSet());
-                int count = thirdOutput.stream().mapToInt(String::length).min().getAsInt();
-                int parsedNumber = Integer.parseInt(input.substring(0, input.length() - 1));
-                System.out.println(input + " " + count + "  " + parsedNumber + "   " + (count * parsedNumber) + "  " + firstOutput.size() + "  " + secondOutput.size() + "  " + thirdOutput.size());
-                result += count * parsedNumber;
+
+    public static void main(String[] args) throws IOException {
+        InputStream is = org.advent.advent2024.day2.Main.class.getClassLoader()
+                .getResourceAsStream("org/advent/advent2024/day21/input.txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        Map<Character, Position> numericKeypad = new HashMap<>();
+        Map<Character, Position> directionalKeypad = new HashMap<>();
+        HashMap<Key, Long> directionalKeypadCache = new HashMap<>();
+        Position numericBlank = new Position(0, 3);
+        Position directionalBlank = new Position(0, 0);
+        initNumericKeypad(numericKeypad);
+        initDirectionalKeypad(directionalKeypad);
+        long stage1 = 0;
+        long stage2 = 0;
+        while (br.ready()) {
+            String code = br.readLine();
+            List<String> numericKeypadMoves = movesOnPad(numericKeypad, numericBlank, code, numericKeypad.get('A'));
+            List<String> moves = numericKeypadMoves;
+            int directionalKeypadSteps = 2;
+            for (int i = 0; i < directionalKeypadSteps; i++) {
+                List<String> newMoves = new ArrayList<>();
+                for (String move : moves) {
+                    newMoves.addAll(movesOnPad(directionalKeypad, directionalBlank, move, directionalKeypad.get('A')));
+                }
+                moves = newMoves;
             }
-            System.out.println(result);
-        } catch (Exception e) {
-            e.printStackTrace();
+            List<String> all = new ArrayList<>(moves);
+            all.sort(Comparator.comparingInt(String::length));
+            long codeNum = Long.parseLong(code.substring(0, 3));
+            long complexity = codeNum * all.get(0).length();
+            stage1 += complexity;
+
+            long len = Long.MAX_VALUE;
+            for (String numPadMove : numericKeypadMoves) {
+                char previous = 'A';
+                long candidateLength = 0;
+                for (char c : numPadMove.toCharArray()) {
+                    candidateLength += calcBestOnDirectionalPad(directionalKeypadCache, directionalKeypad, directionalBlank, 25, c, previous);
+                    previous = c;
+                }
+                len = Math.min(len, candidateLength);
+            }
+            complexity = codeNum * len;
+            stage2 += complexity;
         }
+        System.out.println(stage1);
+        System.out.println(stage2);
     }
 
-    public static Set<String> getDirectionalKeypadMove(Map<Transition, Map<Character, Integer>> directionalKeypad, String input) {
-        char lastMove = ' ';
-        char currentCharacter = 'A';
-        Set<String> outputList = new HashSet<>();
-        for (char inputChar : input.toCharArray()) {
-            boolean allowToShuffle = true;
-            StringBuilder output = new StringBuilder();
-            Transition currentTransition = new Transition(currentCharacter, inputChar);
-            Map<Character, Integer> movesToBeDone = new HashMap<>(directionalKeypad.get(currentTransition));
-            if (currentCharacter == '<' && (inputChar == '^' || inputChar == 'A')) {
-                allowToShuffle = false;
-                output.append(">");
-                lastMove = '>';
-                if (movesToBeDone.get('>') > 1) {
-                    movesToBeDone.put('>', movesToBeDone.get('>') - 1);
-                } else {
-                    movesToBeDone.remove('>');
+    private static long calcBestOnDirectionalPad(HashMap<Key, Long> directionalPadCache, Map<Character, Position> directionalKeypad, Position directionalBlank, int padCount, char move, char start) {
+        Key key = new Key(padCount, move, start);
+        if (directionalPadCache.containsKey(key)) {
+            return directionalPadCache.get(key);
+        }
+        long result = Long.MAX_VALUE;
+        for (String moveCandidate : movesOnPad(directionalKeypad, directionalBlank, String.valueOf(move), directionalKeypad.get(start))) {
+            long candidateLength = 0;
+            if (padCount == 1) {
+                candidateLength = moveCandidate.length();
+            } else {
+                char prev = 'A';
+                for (int i = 0; i < moveCandidate.length(); i++) {
+                    char c = moveCandidate.charAt(i);
+                    candidateLength += calcBestOnDirectionalPad(directionalPadCache, directionalKeypad, directionalBlank, padCount - 1, c, prev);
+                    prev = c;
                 }
             }
-            if ((currentCharacter == '^' || currentCharacter == 'A') && inputChar == '<') {
-                allowToShuffle = false;
-                output.append("v");
-                lastMove = 'v';
-                if (movesToBeDone.get('v') > 1) {
-                    movesToBeDone.put('v', movesToBeDone.get('v') - 1);
-                } else {
-                    movesToBeDone.remove('v');
+            result = Math.min(result, candidateLength);
+        }
+        directionalPadCache.put(key, result);
+        return result;
+    }
+
+    static List<String> movesOnPad(Map<Character, Position> keypad, Position crash, String code, Position start) {
+        Position current = start;
+        List<StringBuilder> output = new ArrayList<>();
+        output.add(new StringBuilder());
+        for (char inputChar : code.toCharArray()) {
+            Position nextPosition = keypad.get(inputChar);
+            if (nextPosition == null) {
+                System.out.println("*****");
+            }
+            List<List<Direction>> possibilities = new ArrayList<>(2);
+            for (Direction direction : Direction.values()) {
+                List<Direction> moves = direction.calculateMoves(current, nextPosition);
+                if (!moves.isEmpty()) {
+                    possibilities.add(moves);
                 }
             }
-            if (movesToBeDone.containsKey(lastMove)) {
-                output.append(lastMove);
-                if (movesToBeDone.get(lastMove) > 1) {
-                    movesToBeDone.put(lastMove, movesToBeDone.get(lastMove) - 1);
-                } else {
-                    movesToBeDone.remove(lastMove);
+            if (possibilities.size() == 2) {
+                boolean first = true;
+                int x = current.x;
+                int y = current.y;
+                for (Direction d : possibilities.get(0)) {
+                    x += d.x;
+                    y += d.y;
+                    if (crash.x == x && crash.y == y) {
+                        first = false;
+                        break;
+                    }
                 }
-            }
-            for (char move : movesToBeDone.keySet()) {
-                for (int i = 0; i < movesToBeDone.get(move); i++) {
-                    output.append(move);
+                boolean second = true;
+                x = current.x;
+                y = current.y;
+                for (Direction d : possibilities.get(1)) {
+                    x += d.x;
+                    y += d.y;
+                    if (crash.x == x && crash.y == y) {
+                        second = false;
+                        break;
+                    }
                 }
-                lastMove = move;
-            }
-            Set<String> incomingOutput = new HashSet<>();
-            if (outputList.isEmpty()) {
-                if (allowToShuffle) {
-                    outputList.addAll(permutation(output.toString()).stream().map(i -> i + 'A')
-                            .collect(Collectors.toSet()));
+                if (first && !second) {
+                    for (StringBuilder sb : output) {
+                        possibilities.get(0).forEach(d -> sb.append(d.c));
+                        possibilities.get(1).forEach(d -> sb.append(d.c));
+                        sb.append('A');
+                    }
+                } else if (!first && second) {
+                    for (StringBuilder sb : output) {
+                        possibilities.get(1).forEach(d -> sb.append(d.c));
+                        possibilities.get(0).forEach(d -> sb.append(d.c));
+                        sb.append('A');
+                    }
                 } else {
-                    outputList.add(output.toString() + 'A');
+                    List<StringBuilder> add = new ArrayList<>();
+                    for (StringBuilder sb : output) {
+                        StringBuilder sb2 = new StringBuilder();
+                        sb2.append(sb.toString());
+                        possibilities.get(0).forEach(d -> sb.append(d.c));
+                        possibilities.get(1).forEach(d -> sb.append(d.c));
+                        sb.append('A');
+                        possibilities.get(1).forEach(d -> sb2.append(d.c));
+                        possibilities.get(0).forEach(d -> sb2.append(d.c));
+                        sb2.append('A');
+                        add.add(sb2);
+                    }
+                    output.addAll(add);
                 }
             } else {
-                for (String s : outputList) {
-                    if (allowToShuffle) {
-                        incomingOutput.addAll(permutation(output.toString()).stream().map(i -> s + i + 'A')
-                                .collect(Collectors.toSet()));
-                    } else {
-                        incomingOutput.add(s + output + 'A');
+                for (StringBuilder sb : output) {
+                    if (!possibilities.isEmpty()) {
+                        possibilities.get(0).forEach(d -> sb.append(d.c));
                     }
+                    sb.append('A');
                 }
             }
-            outputList = incomingOutput.isEmpty() ? outputList : incomingOutput;
-            currentCharacter = inputChar;
+            current = nextPosition;
         }
-        return outputList;
+        return output.stream().map(StringBuilder::toString).toList();
     }
 
-    public static Set<String> permutation(String s) {
-        char[] tmp = s.toCharArray();
-        Arrays.sort(tmp);
-        StringBuilder str = new StringBuilder();
-        str.append(tmp);
-        return new HashSet<>(List.of(s, new StringBuilder(s).reverse().toString(), str.toString(), str.reverse().toString()));
+    static void initNumericKeypad(Map<Character, Position> numericKeypad) {
+        numericKeypad.put('A', new Position(2, 3));
+        numericKeypad.put('0', new Position(1, 3));
+        numericKeypad.put('1', new Position(0, 2));
+        numericKeypad.put('2', new Position(1, 2));
+        numericKeypad.put('3', new Position(2, 2));
+        numericKeypad.put('4', new Position(0, 1));
+        numericKeypad.put('5', new Position(1, 1));
+        numericKeypad.put('6', new Position(2, 1));
+        numericKeypad.put('7', new Position(0, 0));
+        numericKeypad.put('8', new Position(1, 0));
+        numericKeypad.put('9', new Position(2, 0));
     }
 
-    public static Set<String> getNumericalKeypadMove(Map<Transition, Map<Character, Integer>> numericalKeypad, String input) {
-        char currentCharacter = 'A';
-        char lastMove = ' ';
-        Set<String> outputList = new HashSet<>();
-        for (char inputChar : input.toCharArray()) {
-            StringBuilder output = new StringBuilder();
-            boolean allowToShuffle = true;
-            Transition currentTransition = new Transition(currentCharacter, inputChar);
-            Map<Character, Integer> movesToBeDone = new HashMap<>(numericalKeypad.get(currentTransition));
-            if ((currentCharacter == 'A' || currentCharacter == '0') && movesToBeDone.containsKey('^') && movesToBeDone.containsKey('<') && movesToBeDone.get('<') == 2) {
-                allowToShuffle = false;
-                output.append("^");
-                lastMove = '^';
-                if (movesToBeDone.get('^') > 1) {
-                    movesToBeDone.put('^', movesToBeDone.get('^') - 1);
-                } else {
-                    movesToBeDone.remove('^');
-                }
-            }
-            if (inputChar == '0' && currentCharacter != 'A' && ((int) (currentCharacter - '0') % 3 == 1 && movesToBeDone.containsKey('>'))) {
-                allowToShuffle = false;
-                output.append(">");
-                lastMove = '>';
-                if (movesToBeDone.get('>') > 1) {
-                    movesToBeDone.put('>', movesToBeDone.get('>') - 1);
-                } else {
-                    movesToBeDone.remove('>');
-                }
-            }
-            if (movesToBeDone.containsKey(lastMove)) {
-                while ((movesToBeDone.get(lastMove) > 0)) {
-                    movesToBeDone.put(lastMove, movesToBeDone.get(lastMove) - 1);
-                    output.append(lastMove);
-                }
-                movesToBeDone.remove(lastMove);
-            }
-            for (char move : movesToBeDone.keySet()) {
-                for (int i = 0; i < movesToBeDone.get(move); i++) {
-                    output.append(move);
-                }
-                lastMove = move;
-            }
-            Set<String> incomingOutput = new HashSet<>();
-            if (outputList.isEmpty()) {
-                if (allowToShuffle) {
-                    outputList.addAll(permutation(output.toString()).stream().map(i -> i + 'A')
-                            .collect(Collectors.toSet()));
-                } else {
-                    outputList.add(output.toString() + 'A');
-                }
-            } else {
-                for (String s : outputList) {
-                    if (allowToShuffle) {
-                        incomingOutput.addAll(permutation(output.toString()).stream().map(i -> s + i + 'A')
-                                .collect(Collectors.toSet()));
-                    } else {
-                        incomingOutput.add(s + output + 'A');
-                    }
-                }
-            }
-            outputList = incomingOutput.isEmpty() ? outputList : incomingOutput;
-            currentCharacter = inputChar;
-        }
-        return outputList;
+    static void initDirectionalKeypad(Map<Character, Position> directionalKeypad) {
+        directionalKeypad.put('A', new Position(2, 0));
+        directionalKeypad.put('^', new Position(1, 0));
+        directionalKeypad.put('<', new Position(0, 1));
+        directionalKeypad.put('v', new Position(1, 1));
+        directionalKeypad.put('>', new Position(2, 1));
+
     }
 
-    public static void initNumericalKeypad(Map<Transition, Map<Character, Integer>> numericalOutputKeypad) {
-        for (int i = 1; i <= 9; i++) {
-            for (int j = 1; j <= 9; j++) {
-                if (i == 3 && j == 7) {
-                    System.out.println("x");
-                }
-                if (i == j) {
-                    numericalOutputKeypad.put(new Transition(i, j), Map.of());
-                }
-                int tmpI = i;
-                Transition transition = new Transition(i, j);
-                Map<Character, Integer> occurenceMap = new HashMap<>();
-                numericalOutputKeypad.put(transition, new HashMap<>());
-                while (Math.abs(((tmpI - 1) / 3) - ((j - 1) / 3)) > 0) {
-                    if (tmpI > j) {
-                        occurenceMap.put('v', occurenceMap.getOrDefault('v', 0) + 1);
-                        tmpI = tmpI - 3;
+    enum Direction {
+        UP(0, -1, '^'),
+        DOWN(0, 1, 'v'),
+        LEFT(-1, 0, '<'),
+        RIGHT(1, 0, '>');
+        int x;
+        int y;
+        char c;
 
-                    } else {
-                        occurenceMap.put('^', occurenceMap.getOrDefault('^', 0) + 1);
-                        tmpI = tmpI + 3;
-                    }
-                }
-                while (Math.abs(tmpI - j) > 0) {
-                    if (tmpI > j) {
-                        occurenceMap.put('<', occurenceMap.getOrDefault('<', 0) + 1);
-                        tmpI = tmpI - 1;
-
-                    } else {
-                        occurenceMap.put('>', occurenceMap.getOrDefault('>', 0) + 1);
-                        tmpI = tmpI + 1;
-
-                    }
-                }
-                numericalOutputKeypad.put(transition, occurenceMap);
-            }
+        Direction(int x, int y, char c) {
+            this.x = x;
+            this.y = y;
+            this.c = c;
         }
 
-        for (int i = 1; i <= 9; i++) {
-            Transition transitionFromZero = new Transition('0', i);
-            Transition transitionFromA = new Transition('A', i);
-            Transition transitionToZero = new Transition(i, '0');
-            Transition transitionToA = new Transition(i, 'A');
-            Map<Character, Integer> occurenceMap;
-
-            occurenceMap = new HashMap<>(numericalOutputKeypad.get(new Transition(2, i)));
-            occurenceMap.put('^', occurenceMap.getOrDefault('^', 0) + 1);
-            numericalOutputKeypad.put(transitionFromZero, occurenceMap);
-
-            occurenceMap = new HashMap<>(numericalOutputKeypad.get(new Transition(i, 2)));
-            occurenceMap.put('v', occurenceMap.getOrDefault('v', 0) + 1);
-            numericalOutputKeypad.put(transitionToZero, occurenceMap);
-
-            occurenceMap = new HashMap<>(numericalOutputKeypad.get(new Transition(3, i)));
-            occurenceMap.put('^', occurenceMap.getOrDefault('^', 0) + 1);
-            numericalOutputKeypad.put(transitionFromA, occurenceMap);
-
-            occurenceMap = new HashMap<>(numericalOutputKeypad.get(new Transition(i, 3)));
-            occurenceMap.put('v', occurenceMap.getOrDefault('v', 0) + 1);
-            numericalOutputKeypad.put(transitionToA, occurenceMap);
+        List<Direction> calculateMoves(Position start, Position end) {
+            List<Direction> moves = new ArrayList<>();
+            if (this == UP) {
+                for (int i = start.y; i > end.y; i--) {
+                    moves.add(UP);
+                }
+            } else if (this == DOWN) {
+                for (int i = start.y; i < end.y; i++) {
+                    moves.add(DOWN);
+                }
+            } else if (this == LEFT) {
+                for (int i = start.x; i > end.x; i--) {
+                    moves.add(LEFT);
+                }
+            } else if (this == RIGHT) {
+                for (int i = start.x; i < end.x; i++) {
+                    moves.add(RIGHT);
+                }
+            }
+            return moves;
         }
-
-        numericalOutputKeypad.put(new Transition('A', '0'), Map.of('<', 1));
-        numericalOutputKeypad.put(new Transition('0', 'A'), Map.of('>', 1));
     }
 
-    public static void initDirectionalKeypad(Map<Transition, Map<Character, Integer>> directionalKeypad) {
-        directionalKeypad.put(new Transition('^', 'A'), Map.of('>', 1));
-        directionalKeypad.put(new Transition('^', 'v'), Map.of('v', 1));
-        directionalKeypad.put(new Transition('^', '>'), Map.of('>', 1, 'v', 1));
-        directionalKeypad.put(new Transition('^', '<'), Map.of('v', 1, '<', 1));
-        directionalKeypad.put(new Transition('^', '^'), Map.of());
-
-        directionalKeypad.put(new Transition('>', 'A'), Map.of('^', 1));
-        directionalKeypad.put(new Transition('>', '<'), Map.of('<', 2));
-        directionalKeypad.put(new Transition('>', '^'), Map.of('<', 1, '^', 1));
-        directionalKeypad.put(new Transition('>', 'v'), Map.of('<', 1));
-        directionalKeypad.put(new Transition('>', '>'), Map.of());
-
-        directionalKeypad.put(new Transition('<', 'A'), Map.of('>', 2, '^', 1));
-        directionalKeypad.put(new Transition('<', '^'), Map.of('>', 1, '^', 1));
-        directionalKeypad.put(new Transition('<', 'v'), Map.of('>', 1));
-        directionalKeypad.put(new Transition('<', '>'), Map.of('>', 2));
-        directionalKeypad.put(new Transition('<', '<'), Map.of());
-
-        directionalKeypad.put(new Transition('v', 'A'), Map.of('^', 1, '>', 1));
-        directionalKeypad.put(new Transition('v', '>'), Map.of('>', 1));
-        directionalKeypad.put(new Transition('v', '<'), Map.of('<', 1));
-        directionalKeypad.put(new Transition('v', '^'), Map.of('^', 1));
-        directionalKeypad.put(new Transition('v', 'v'), Map.of());
-
-        directionalKeypad.put(new Transition('A', 'v'), Map.of('<', 1, 'v', 1));
-        directionalKeypad.put(new Transition('A', '>'), Map.of('v', 1));
-        directionalKeypad.put(new Transition('A', '^'), Map.of('<', 1));
-        directionalKeypad.put(new Transition('A', '<'), Map.of('v', 1, '<', 2));
-        directionalKeypad.put(new Transition('A', 'A'), Map.of());
+    record Position(int x, int y) {
     }
 
+    record Key(int count, char move, char start) {
+    }
 }
