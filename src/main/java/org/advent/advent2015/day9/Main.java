@@ -1,4 +1,4 @@
-package org.advent.advent2015.day8;
+package org.advent.advent2015.day9;
 
 
 import java.io.BufferedReader;
