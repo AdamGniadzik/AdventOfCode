@@ -1,0 +1,3 @@
+Thulium-G,Thulium-M,Plutonium-G,Strontium-G
+Plutonium-M,Strontium-M
+Promethium-G,Promethium-M,Ruthenium-G,Ruthenium-M
