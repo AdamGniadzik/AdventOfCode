@@ -3,48 +3,42 @@ package org.advent.advent2017.day1;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
 
 public class Main {
 
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         BufferedReader br = new BufferedReader(new FileReader("src/main/java/org/advent/advent2017/day1/input.txt"));
-        int input = Integer.parseInt(br.readLine());
+        String input = br.readLine();
         stage1(input);
         stage2(input);
 
-    }
-    public static void stage1(int input) {
-        LinkedList<Integer> list = new LinkedList<>();
-        list.add(0);
-        int index = 0;
-        for(int i =0;i<2017;i++){
-            index = ((index + input) % (list.size()) )+ 1;
-            list.add(index, i+1);
-        }
-        System.out.println(list.get(index + 1));
 
     }
-    public static void stage2(int input) {
-        int size = 1;
-        int index = 0;
-        int lastSaved = 0;
-        for(int i =0;i<50000000;i++){
-            index = ((index + input) % (size) )+ 1;
-            size++;
-            if(index == 1){
-                lastSaved = i+1;
+
+    public static void stage1(String input) {
+        int sum = 0;
+        for (int i = 0; i < input.length() - 1; i++) {
+            if (input.charAt(i) == input.charAt(i + 1)) {
+                sum += input.charAt(i) - '0';
             }
         }
-        System.out.println(lastSaved);
+        if (input.charAt(input.length() - 1) == input.charAt(0)) {
+            sum += input.charAt(0) - '0';
+        }
+        System.out.println(sum);
+    }
 
+    public static void stage2(String input) {
+        int sum = 0;
+        for (int i = 0; i < input.length() - 1; i++) {
+            if (input.charAt(i) == input.charAt((i + (input.length() / 2)) % input.length())) {
+                sum += input.charAt(i) - '0';
+            }
+        }
+        System.out.println(sum);
     }
 
 
